@@ -15,11 +15,16 @@ export interface StagedRow {
   error: string | null
 }
 
-/** Zet ruwe, nog-niet-getypeerde rijen om naar genormaliseerde rijen, met foutmelding en dubbele-import-detectie. */
+/**
+ * Zet ruwe, nog-niet-getypeerde rijen om naar genormaliseerde rijen, met foutmelding en
+ * dubbele-import-detectie. `directionOverride` negeert het teken van het bedrag volledig — handig
+ * voor een eigen lijstje dat geen +/- gebruikt en bijvoorbeeld altijd alleen kosten bevat.
+ */
 export function stageRows(
   rows: Record<string, unknown>[],
   mapping: ColumnMapping,
   existingHashes: Set<string>,
+  directionOverride?: 'in' | 'out',
 ): StagedRow[] {
   if (!mapping.date || !mapping.description || !mapping.amount) {
     throw new Error('Mapping is niet compleet')
@@ -59,7 +64,7 @@ export function stageRows(
       }
     }
 
-    const direction: 'in' | 'out' = (amountGross ?? 0) >= 0 ? 'in' : 'out'
+    const direction: 'in' | 'out' = directionOverride ?? ((amountGross ?? 0) >= 0 ? 'in' : 'out')
 
     let isDuplicate = false
     if (date && amountGross !== null) {

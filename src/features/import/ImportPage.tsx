@@ -27,6 +27,7 @@ export function ImportPage() {
   const [parsed, setParsed] = useState<ParsedFile | null>(null)
   const [mapping, setMapping] = useState<ColumnMapping>(EMPTY_MAPPING)
   const [stagedRows, setStagedRows] = useState<StagedRow[]>([])
+  const [directionOverride, setDirectionOverride] = useState<'auto' | 'in' | 'out'>('auto')
   const [importedCount, setImportedCount] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
@@ -62,7 +63,8 @@ export function ImportPage() {
     setIsBusy(true)
     try {
       const existingHashes = await loadExistingHashes()
-      setStagedRows(stageRows(parsed.rows, mapping, existingHashes))
+      const override = directionOverride === 'auto' ? undefined : directionOverride
+      setStagedRows(stageRows(parsed.rows, mapping, existingHashes, override))
       setStep('preview')
     } finally {
       setIsBusy(false)
@@ -107,6 +109,7 @@ export function ImportPage() {
     setParsed(null)
     setMapping(EMPTY_MAPPING)
     setStagedRows([])
+    setDirectionOverride('auto')
     setError(null)
   }
 
@@ -143,6 +146,35 @@ export function ImportPage() {
             <span className="text-sm text-stone-500">{parsed.rows.length} rijen gevonden</span>
           </div>
           <ColumnMapper headers={parsed.headers} mapping={mapping} onChange={setMapping} />
+
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-stone-700">Richting</span>
+            <div className="flex gap-2">
+              <Button
+                variant={directionOverride === 'auto' ? 'primary' : 'secondary'}
+                onClick={() => setDirectionOverride('auto')}
+              >
+                Automatisch (+ of -)
+              </Button>
+              <Button
+                variant={directionOverride === 'out' ? 'primary' : 'secondary'}
+                onClick={() => setDirectionOverride('out')}
+              >
+                Dit zijn allemaal uitgaven
+              </Button>
+              <Button
+                variant={directionOverride === 'in' ? 'primary' : 'secondary'}
+                onClick={() => setDirectionOverride('in')}
+              >
+                Dit zijn allemaal inkomsten
+              </Button>
+            </div>
+            <span className="text-xs text-stone-500">
+              Heeft je bestand geen +/- of Af/Bij-kolom, en bevat het maar één richting? Kies dat
+              hier dan zelf.
+            </span>
+          </div>
+
           <div className="flex justify-between">
             <Button variant="secondary" onClick={reset}>
               Ander bestand kiezen

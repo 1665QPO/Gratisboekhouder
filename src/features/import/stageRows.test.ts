@@ -59,6 +59,16 @@ describe('stageRows', () => {
   it('gooit een duidelijke fout als de mapping niet compleet is', () => {
     expect(() => stageRows([], { ...mapping, amount: null }, new Set())).toThrow()
   })
+
+  it('negeert het teken van het bedrag als er een richting-overschrijving is', () => {
+    const rows = [
+      { Datum: '01-03-2026', Omschrijving: 'Positief bedrag', Bedrag: '10,00' },
+      { Datum: '01-03-2026', Omschrijving: 'Negatief bedrag', Bedrag: '-10,00' },
+    ]
+    const [first, second] = stageRows(rows, mapping, new Set(), 'out')
+    expect(first.direction).toBe('out')
+    expect(second.direction).toBe('out')
+  })
 })
 
 describe('stagedRowToTransaction', () => {

@@ -17,12 +17,38 @@ export const EMPTY_MAPPING: ColumnMapping = {
   debitCreditIndicator: null,
 }
 
-const KEYWORDS: Record<keyof ColumnMapping, string[]> = {
+const KEYWORDS: Record<Exclude<keyof ColumnMapping, 'amount'>, string[]> = {
   date: ['datum', 'date', 'transactiedatum', 'boekdatum'],
   description: ['omschrijving', 'naam / omschrijving', 'mededeling', 'description', 'toelichting'],
-  amount: ['bedrag (eur)', 'bedrag', 'amount'],
   counterparty: ['naam tegenpartij', 'tegenrekening', 'tegenpartij', 'counterparty', 'iban'],
   debitCreditIndicator: ['af bij', 'af/bij', 'debit/credit', 'bij/af'],
+}
+
+const AMOUNT_KEYWORDS = ['bedrag (eur)', 'bedrag', 'amount', 'totaal', 'total']
+
+/** " ex "/" ex."/"excl" als afzonderlijk woord/afkorting, niet als toevallige deelstring. */
+function mentionsExclBtw(header: string): boolean {
+  const padded = ` ${header.toLowerCase()} `
+  return padded.includes('excl') || padded.includes(' ex ') || padded.includes(' ex.')
+}
+
+function mentionsInclBtw(header: string): boolean {
+  const padded = ` ${header.toLowerCase()} `
+  return padded.includes('incl') || padded.includes(' in ') || padded.includes(' in.')
+}
+
+/**
+ * Als een bestand zowel een excl.- als incl.-btw-bedragkolom heeft, willen we altijd de incl.-kolom
+ * (deze app rekent met het brutobedrag) — anders komt elk bedrag stilzwijgend te laag te staan.
+ */
+function guessAmountColumn(headers: string[], used: Set<string>): string | null {
+  const candidates = headers.filter(
+    (h) => !used.has(h) && AMOUNT_KEYWORDS.some((k) => h.toLowerCase().includes(k)),
+  )
+  if (candidates.length === 0) return null
+  return (
+    candidates.find(mentionsInclBtw) ?? candidates.find((h) => !mentionsExclBtw(h)) ?? candidates[0]
+  )
 }
 
 /** Stelt op basis van kolomnamen een mapping voor. De gebruiker bevestigt/corrigeert dit altijd zelf. */
@@ -30,7 +56,7 @@ export function guessColumnMapping(headers: string[]): ColumnMapping {
   const mapping: ColumnMapping = { ...EMPTY_MAPPING }
   const used = new Set<string>()
 
-  for (const field of Object.keys(KEYWORDS) as (keyof ColumnMapping)[]) {
+  for (const field of Object.keys(KEYWORDS) as (keyof typeof KEYWORDS)[]) {
     const keywords = KEYWORDS[field]
     const exact = headers.find((h) => !used.has(h) && keywords.includes(h.toLowerCase().trim()))
     const partial = headers.find(
@@ -42,6 +68,9 @@ export function guessColumnMapping(headers: string[]): ColumnMapping {
       used.add(match)
     }
   }
+
+  const amountMatch = guessAmountColumn(headers, used)
+  if (amountMatch) mapping.amount = amountMatch
 
   return mapping
 }

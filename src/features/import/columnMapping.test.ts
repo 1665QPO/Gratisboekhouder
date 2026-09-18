@@ -26,6 +26,23 @@ describe('guessColumnMapping', () => {
     expect(mapping.date).toBeNull()
     expect(mapping.amount).toBeNull()
   })
+
+  it('kiest de incl.-btw-kolom als er zowel een excl.- als incl.-kolom is', () => {
+    const headers = [
+      'Kolom A',
+      'Soort',
+      'Datum',
+      'Winkel',
+      'Ordernummer',
+      'Factuurnummer',
+      'Bedrag ex',
+      'BTW',
+      'Bedrag incl. BTW',
+      'Definitieve uitgaven',
+    ]
+    const mapping = guessColumnMapping(headers)
+    expect(mapping.amount).toBe('Bedrag incl. BTW')
+  })
 })
 
 describe('resolveSignedAmount', () => {
