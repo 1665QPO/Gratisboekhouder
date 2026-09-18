@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { GITHUB_REPO_URL } from '../lib/links'
 
 const NAV_ITEMS = [
   { to: '/import', label: 'Importeren' },
@@ -43,7 +44,14 @@ export function Layout() {
       <footer className="border-t border-stone-200 bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm text-stone-500">
           <div className="flex flex-wrap gap-4">
-            <span>🔓 Gratis & open source</span>
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-stone-700 hover:underline"
+            >
+              🔓 Gratis & open source op GitHub
+            </a>
             <span>🔒 100% privé: alles blijft op jouw apparaat</span>
           </div>
           <NavLink to="/privacy" className="underline hover:text-stone-700">

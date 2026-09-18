@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Card } from '../../components/Card'
+import { GITHUB_REPO_URL } from '../../lib/links'
 
 const POINTS: { title: string; body: ReactNode }[] = [
   {
@@ -52,7 +53,16 @@ const POINTS: { title: string; body: ReactNode }[] = [
   },
   {
     title: 'Open source',
-    body: 'De volledige broncode is vrij te bekijken. Je hoeft ons niet op ons woord te geloven dat er niets wordt verstuurd: je kunt het zelf (of iemand die het kan) laten controleren.',
+    body: (
+      <>
+        Je hoeft ons niet op ons woord te geloven dat er niets wordt verstuurd: de volledige
+        broncode staat vrij te bekijken op{' '}
+        <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer" className="underline">
+          GitHub
+        </a>
+        . Zelf een bug fixen of een feature toevoegen mag ook.
+      </>
+    ),
   },
 ]
 
