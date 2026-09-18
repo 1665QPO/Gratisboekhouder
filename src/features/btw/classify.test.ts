@@ -14,15 +14,33 @@ describe('classifyTransaction', () => {
     expect(classifyTransaction({ isPrivate: false, direction: 'in', btwRate: null })).toBe('1e')
   })
 
-  it('geeft verlegde btw op inkomsten voorrang boven het tarief', () => {
+  it('classificeert een binnenlandse verlegde levering (bijv. onderaanneming bouw) als 1e, niet 2a', () => {
+    // Rubriek 2a is voor de afnemer van zo'n levering (een inkoop), niet voor de leverancier zelf.
+    // Reproduceert een echte bug: een Duitse klant met "btw verlegd" aangevinkt werd als 2a
+    // geclassificeerd i.p.v. 3b, omdat de verlegd-check voorrang kreeg boven de tegenpartij-check.
     expect(
-      classifyTransaction({ isPrivate: false, direction: 'in', btwRate: 21, btwVerlegd: true }),
-    ).toBe('2a')
+      classifyTransaction({
+        isPrivate: false,
+        direction: 'in',
+        btwRate: 21,
+        tegenpartij: 'nl',
+        btwVerlegd: true,
+      }),
+    ).toBe('1e')
   })
 
-  it('classificeert grensoverschrijdende omzet', () => {
+  it('classificeert grensoverschrijdende omzet, ook als "btw verlegd" is aangevinkt', () => {
     expect(
       classifyTransaction({ isPrivate: false, direction: 'in', btwRate: 21, tegenpartij: 'eu' }),
+    ).toBe('3b')
+    expect(
+      classifyTransaction({
+        isPrivate: false,
+        direction: 'in',
+        btwRate: 21,
+        tegenpartij: 'eu',
+        btwVerlegd: true,
+      }),
     ).toBe('3b')
     expect(
       classifyTransaction({

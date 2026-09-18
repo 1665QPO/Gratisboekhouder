@@ -13,9 +13,11 @@ export function classifyTransaction(answers: ClassificationAnswers): Rubriek | n
   if (answers.isPrivate) return null
 
   if (answers.direction === 'in') {
-    if (answers.btwVerlegd) return '2a'
     if (answers.tegenpartij === 'buiten-eu') return '3a'
     if (answers.tegenpartij === 'eu') return '3b'
+    // Btw verlegd naar een Nederlandse afnemer (bijv. onderaanneming in de bouw): u bent de
+    // leverancier, dus dit gaat in 1e. Rubriek 2a is voor de afnemer van zo'n levering, niet voor u.
+    if (answers.btwVerlegd) return '1e'
     if (answers.btwRate === 21) return '1a'
     if (answers.btwRate === 9) return '1b'
     return '1e'
