@@ -65,6 +65,27 @@ export function isDeadlinePassed(period: Period, today: Date = new Date()): bool
   return todayIso > periodDeadline(period)
 }
 
+function previousPeriod(period: Period): Period {
+  return period.quarter === 1
+    ? { year: period.year - 1, quarter: 4 }
+    : { year: period.year, quarter: (period.quarter - 1) as 1 | 2 | 3 | 4 }
+}
+
+/**
+ * De eerstvolgende aangiftedeadline om aan te herinneren: zolang de deadline van het vórige
+ * (net afgesloten) kwartaal nog niet is verstreken, is dat de relevante deadline om naartoe te
+ * werken. Is die al voorbij, dan is de deadline van het lopende kwartaal de eerstvolgende.
+ */
+export function nextDeadline(today: Date = new Date()): { period: Period; deadline: string } {
+  const current = quarterOf(today.toISOString().slice(0, 10))
+  const previous = previousPeriod(current)
+  const previousDeadline = periodDeadline(previous)
+  if (!isDeadlinePassed(previous, today)) {
+    return { period: previous, deadline: previousDeadline }
+  }
+  return { period: current, deadline: periodDeadline(current) }
+}
+
 /** Alle kwartalen waarin minstens één transactie valt, meest recente eerst. */
 export function availablePeriods(dates: string[]): Period[] {
   const seen = new Map<string, Period>()

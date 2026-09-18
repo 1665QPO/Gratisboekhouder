@@ -4,6 +4,7 @@ import {
   formatDeadline,
   isDeadlinePassed,
   isInPeriod,
+  nextDeadline,
   periodDeadline,
   periodLabel,
   periodRange,
@@ -97,5 +98,28 @@ describe('isDeadlinePassed', () => {
     expect(isDeadlinePassed(q1, new Date('2026-04-29T23:00:00Z'))).toBe(false)
     expect(isDeadlinePassed(q1, new Date('2026-04-30T23:00:00Z'))).toBe(false)
     expect(isDeadlinePassed(q1, new Date('2026-05-01T00:00:00Z'))).toBe(true)
+  })
+})
+
+describe('nextDeadline', () => {
+  it('wijst tijdens het lopende kwartaal naar de deadline van het net afgesloten kwartaal', () => {
+    // 15 april 2026 zit middenin Q2, maar de deadline om over Q1 aangifte te doen (30 april) is
+    // dan nog niet voorbij, dus die hoort de eerstvolgende te zijn.
+    const result = nextDeadline(new Date('2026-04-15T12:00:00Z'))
+    expect(result.period).toEqual({ year: 2026, quarter: 1 })
+    expect(result.deadline).toBe('2026-04-30')
+  })
+
+  it('springt door naar het lopende kwartaal zodra de vorige deadline voorbij is', () => {
+    const result = nextDeadline(new Date('2026-05-05T12:00:00Z'))
+    expect(result.period).toEqual({ year: 2026, quarter: 2 })
+    expect(result.deadline).toBe('2026-07-31')
+  })
+
+  it('loopt het jaartal correct terug bij het eerste kwartaal van het jaar', () => {
+    // Half januari 2026: de deadline voor Q4 2025 (31 januari 2026) is nog niet voorbij.
+    const result = nextDeadline(new Date('2026-01-15T12:00:00Z'))
+    expect(result.period).toEqual({ year: 2025, quarter: 4 })
+    expect(result.deadline).toBe('2026-01-31')
   })
 })

@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { DeadlineReminder } from '../features/export/components/DeadlineReminder'
 import { GITHUB_REPO_URL } from '../lib/links'
 
 const NAV_ITEMS = [
@@ -36,6 +37,8 @@ export function Layout() {
           </nav>
         </div>
       </header>
+
+      <DeadlineReminder />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         <Outlet />
