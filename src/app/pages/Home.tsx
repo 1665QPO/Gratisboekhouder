@@ -4,7 +4,7 @@ import { Card } from '../../components/Card'
 const STEPS = [
   {
     title: 'Upload je bankafschrift of Excel',
-    body: 'CSV of Excel-export van je bank, of je eigen bijhoudlijstje — jij kiest zelf welke kolom wat betekent.',
+    body: 'CSV of Excel-export van je bank, of je eigen bijhoudlijstje. Jij kiest zelf welke kolom wat betekent.',
   },
   {
     title: 'Beantwoord een paar simpele vragen',
@@ -30,7 +30,7 @@ export function Home() {
         </h1>
         <p className="max-w-xl text-lg text-stone-600">
           Upload een bankafschrift of je eigen Excel, voeg bonnetjes toe, en krijg een overzicht van
-          precies wat je moet invullen bij de Belastingdienst. Alles draait in je eigen browser — er
+          precies wat je moet invullen bij de Belastingdienst. Alles draait in je eigen browser, er
           gaat niets naar een server.
         </p>
         <div className="flex gap-3">

@@ -17,6 +17,7 @@ import {
 import { loadExistingHashes } from './dedupe'
 import { parseImportFile, type ParsedFile } from './parseFile'
 import { stageRows, stagedRowToTransaction, type StagedRow } from './stageRows'
+import { applyExistingRules } from '../transactions/counterpartyRules'
 
 type Step = 'upload' | 'mapping' | 'preview' | 'done'
 
@@ -79,12 +80,19 @@ export function ImportPage() {
         mapping: 'handmatig toegewezen',
         rowCount: toImport.length,
       }
-      const transactions = toImport.map((row) => stagedRowToTransaction(row, batch.id))
+      const rawTransactions = toImport.map((row) => stagedRowToTransaction(row, batch.id))
+      const transactions = await applyExistingRules(rawTransactions)
 
-      await db.transaction('rw', db.importBatches, db.transactions, async () => {
-        await db.importBatches.add(batch)
-        await db.transactions.bulkAdd(transactions)
-      })
+      await db.transaction(
+        'rw',
+        db.importBatches,
+        db.counterpartyRules,
+        db.transactions,
+        async () => {
+          await db.importBatches.add(batch)
+          await db.transactions.bulkAdd(transactions)
+        },
+      )
 
       setImportedCount(transactions.length)
       setStep('done')
@@ -108,7 +116,7 @@ export function ImportPage() {
         <h1 className="text-3xl font-semibold text-stone-900">Bankafschrift of Excel importeren</h1>
         <p className="mt-2 max-w-2xl text-stone-600">
           Upload een export van je bank, of je eigen bijhoudlijstje. Alles wordt lokaal in je
-          browser verwerkt — er wordt niets geüpload naar een server.
+          browser verwerkt, er wordt niets geüpload naar een server.
         </p>
       </div>
 
@@ -124,14 +132,14 @@ export function ImportPage() {
           accept=".csv,.xlsx"
           icon="📄"
           title="Sleep je bankafschrift of Excel-bestand hierheen, of klik om te kiezen"
-          hint="CSV of XLSX — bijvoorbeeld een export van je bank"
+          hint="CSV of XLSX, bijvoorbeeld een export van je bank"
         />
       )}
 
       {step === 'mapping' && parsed && (
         <Card className="flex flex-col gap-5">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-stone-900">Welke kolom is wat? — {fileName}</h2>
+            <h2 className="font-semibold text-stone-900">Welke kolom is wat? ({fileName})</h2>
             <span className="text-sm text-stone-500">{parsed.rows.length} rijen gevonden</span>
           </div>
           <ColumnMapper headers={parsed.headers} mapping={mapping} onChange={setMapping} />

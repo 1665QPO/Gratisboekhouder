@@ -40,7 +40,7 @@ export function ColumnMapper({ headers, mapping, onChange }: ColumnMapperProps) 
             onChange={(event) => onChange({ ...mapping, [field.key]: event.target.value || null })}
             className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
           >
-            <option value="">— geen —</option>
+            <option value="">(geen)</option>
             {headers.map((header) => (
               <option key={header} value={header}>
                 {header}

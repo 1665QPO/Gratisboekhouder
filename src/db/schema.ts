@@ -10,8 +10,9 @@ class BoekhouderDB extends Dexie {
   constructor() {
     super('zzp-boekhouder')
     this.version(1).stores({
-      transactions: 'id, date, direction, rubriek, needsReview, importBatchId, receiptId',
-      counterpartyRules: 'id, matchOn',
+      // needsReview is een boolean en dus geen geldige IndexedDB-sleutel; filter die client-side.
+      transactions: 'id, date, direction, rubriek, importBatchId, receiptId',
+      counterpartyRules: 'id, &matchOn',
       receipts: 'id, status, linkedTransactionId',
       importBatches: 'id, importedAt',
     })

@@ -121,7 +121,7 @@ export function ReceiptsPage() {
       <div>
         <h1 className="text-3xl font-semibold text-stone-900">Bonnetje uploaden</h1>
         <p className="mt-2 max-w-2xl text-stone-600">
-          Foto of PDF van een bonnetje of factuur. Herkenning gebeurt volledig in je browser — er
+          Foto of PDF van een bonnetje of factuur. Herkenning gebeurt volledig in je browser, er
           wordt geen foto ergens naartoe gestuurd.
         </p>
       </div>
@@ -155,7 +155,7 @@ export function ReceiptsPage() {
           {displayUrl && displayBlob?.type === 'application/pdf' ? (
             <Card className="flex flex-col items-center justify-center gap-3 p-6 text-center">
               <span className="text-4xl">📄</span>
-              <p className="text-sm text-stone-600">PDF-bestand — geen voorbeeld in de browser</p>
+              <p className="text-sm text-stone-600">PDF-bestand, geen voorbeeld in de browser</p>
               <a
                 href={displayUrl}
                 target="_blank"
@@ -178,10 +178,15 @@ export function ReceiptsPage() {
           )}
 
           <Card className="flex flex-col gap-4">
-            {nothingRecognized && (
+            {nothingRecognized ? (
               <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Kon niets automatisch herkennen — vul de gegevens hieronder zelf in.
+                Kon niets automatisch herkennen. Vul de gegevens hieronder zelf in.
               </div>
+            ) : (
+              <p className="text-xs text-stone-500">
+                Automatisch herkend, controleer bedrag en datum. Bij een gekreukte of vage foto kan
+                dit onopvallend fout zijn.
+              </p>
             )}
 
             <label className="flex flex-col gap-1">
@@ -234,8 +239,8 @@ export function ReceiptsPage() {
                       onChange={() => setSelectedMatchId(m.id)}
                     />
                     <span>
-                      {m.date} — {m.description || 'Zonder omschrijving'} —{' '}
-                      {formatCurrency(m.amountGross)}
+                      {m.date} ({m.description || 'Zonder omschrijving'},{' '}
+                      {formatCurrency(m.amountGross)})
                     </span>
                   </label>
                 ))}
@@ -246,7 +251,7 @@ export function ReceiptsPage() {
                     checked={selectedMatchId === null}
                     onChange={() => setSelectedMatchId(null)}
                   />
-                  <span>Geen van deze — nieuwe transactie aanmaken</span>
+                  <span>Geen van deze, nieuwe transactie aanmaken</span>
                 </label>
               </div>
             )}

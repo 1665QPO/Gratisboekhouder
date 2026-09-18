@@ -27,7 +27,7 @@ export interface CounterpartyRule {
   matchOn: string // genormaliseerde omschrijving/tegenpartij
   categoryId?: string
   btwRate: BtwRate
-  rubriek: Rubriek
+  rubriek: Rubriek | null
   isPrivate: boolean
 }
 

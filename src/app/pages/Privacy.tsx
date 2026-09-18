@@ -7,11 +7,15 @@ const POINTS = [
   },
   {
     title: 'Opslag in je browser',
-    body: 'Transacties, categorieën en bonnetje-foto’s worden lokaal opgeslagen in de database van je browser (IndexedDB) — vergelijkbaar met hoe cookies werken, maar dan voor jouw boekhouddata.',
+    body: 'Transacties, categorieën en bonnetje-foto’s worden lokaal opgeslagen in de database van je browser (IndexedDB), vergelijkbaar met hoe cookies werken, maar dan voor jouw boekhouddata.',
   },
   {
     title: 'Bonnetjes-herkenning draait lokaal',
     body: 'Tekst van bonnetje-foto’s wordt in de browser zelf herkend (geen foto verlaat je apparaat om herkend te worden).',
+  },
+  {
+    title: 'Bonnetjes-herkenning kan zich vergissen',
+    body: 'Op een vlakke, goed leesbare bon werkt de automatische herkenning van bedrag en datum vrijwel altijd goed. Bij een gekreukte, beschadigde of vage foto kan de herkenning een verkeerd bedrag voorstellen dat er op het eerste gezicht wél kloppend uitziet. Controleer daarom altijd de voorgestelde velden, en bij twijfel de meegetoonde ruwe herkende tekst, voordat je een bonnetje opslaat.',
   },
   {
     title: 'Jij bent verantwoordelijk voor back-ups',
@@ -22,12 +26,12 @@ const POINTS = [
     body: 'Als je de site-data van deze app in je browser wist (of een andere browser/apparaat gebruikt), ben je zonder back-up je gegevens kwijt. Dit is de prijs van 100% privacy: er is geen "wachtwoord vergeten" bij een systeem dat niets van je opslaat.',
   },
   {
-    title: 'Wat is al veilig, wat nog niet',
-    body: 'Zodra je een import bevestigt of een transactie categoriseert, staat het meteen veilig in je browser — ook als de pagina daarna crasht of je hem per ongeluk wegklikt. Alleen tijdens het instellen van een import (vóórdat je op "Bevestig import" klikt) staat het nog even alleen in het geheugen; crasht de pagina precies op dat moment, dan moet je dat ene bestand opnieuw uploaden.',
+    title: 'Wanneer is je werk opgeslagen',
+    body: 'Zodra je een import bevestigt of een transactie categoriseert, is dat direct opgeslagen in je browser, ook als de pagina daarna crasht of je hem per ongeluk wegklikt. Alleen tijdens het instellen van een import (vóórdat je op "Bevestig import" klikt) is er nog niets opgeslagen; crasht de pagina precies op dat moment, dan moet je dat ene bestand opnieuw uploaden.',
   },
   {
     title: 'Open source',
-    body: 'De volledige broncode is vrij te bekijken. Je hoeft ons niet op ons woord te geloven dat er niets wordt verstuurd — je kunt het zelf (of iemand die het kan) laten controleren.',
+    body: 'De volledige broncode is vrij te bekijken. Je hoeft ons niet op ons woord te geloven dat er niets wordt verstuurd: je kunt het zelf (of iemand die het kan) laten controleren.',
   },
 ]
 
@@ -37,7 +41,7 @@ export function Privacy() {
       <div>
         <h1 className="text-3xl font-semibold text-stone-900">Privacy: hoe het écht werkt</h1>
         <p className="mt-2 max-w-2xl text-stone-600">
-          Geen kleine lettertjes — dit is de volledige werking van deze app als het om je gegevens
+          Geen kleine lettertjes: dit is de volledige werking van deze app als het om je gegevens
           gaat.
         </p>
       </div>

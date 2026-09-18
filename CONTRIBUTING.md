@@ -1,4 +1,4 @@
-# Bijdragen aan ZZP Boekhouder
+# Bijdragen aan Gratis Boekhouder
 
 Fijn dat je wilt bijdragen! Een paar richtlijnen:
 
@@ -29,7 +29,7 @@ npm run build    # productie-build + typecheck
 
 - Houd PR's gericht op één ding.
 - Voeg unit tests toe voor nieuwe logica in `src/features/*` (met name
-  btw-classificatie en bedrag/datum-parsing — dit is financiële logica, fouten
+  btw-classificatie en bedrag/datum-parsing: dit is financiële logica, fouten
   hier zijn direct schadelijk voor gebruikers).
 - Draai `npm run lint`, `npm run test` en `npm run build` voordat je een PR
   opent.

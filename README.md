@@ -1,4 +1,4 @@
-# ZZP Boekhouder
+# Gratis Boekhouder
 
 Gratis, open-source en volledig privé boekhoudhulp voor ZZP'ers en kleine
 ondernemers. Upload een bankafschrift (CSV/Excel) of je eigen bijhoudlijstje,
@@ -14,7 +14,7 @@ Excel-export volgen in latere fases (zie [Roadmap](#roadmap)).
 Bestaande boekhoudpakketten (Moneybird, Shine, e.d.) zijn prima, maar kosten
 geld en vragen je om je financiële data op hun server te zetten. Dit project
 is het tegenovergestelde: gratis, open source, en zo gebouwd dat het
-technisch onmogelijk is om jouw gegevens naar een server te sturen — er ís
+technisch onmogelijk is om jouw gegevens naar een server te sturen: er ís
 geen server.
 
 ## Hoe privé is het echt?
@@ -67,7 +67,7 @@ Zie [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Licentie
 
-[MIT](./LICENSE) — gebruik, kopieer en pas aan zoals je wilt.
+[MIT](./LICENSE): gebruik, kopieer en pas aan zoals je wilt.
 
 **Disclaimer:** deze app is hulpmiddel, geen belastingadvies. Controleer je
 aangifte altijd zelf of laat die controleren door een boekhouder/adviseur.

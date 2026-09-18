@@ -24,7 +24,7 @@ export function Layout() {
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-600 text-white">
               €
             </span>
-            ZZP Boekhouder
+            Gratis Boekhouder
           </NavLink>
           <nav className="flex flex-wrap gap-1">
             {NAV_ITEMS.map((item) => (
@@ -44,7 +44,7 @@ export function Layout() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm text-stone-500">
           <div className="flex flex-wrap gap-4">
             <span>🔓 Gratis & open source</span>
-            <span>🔒 100% privé — alles blijft op jouw apparaat</span>
+            <span>🔒 100% privé: alles blijft op jouw apparaat</span>
           </div>
           <NavLink to="/privacy" className="underline hover:text-stone-700">
             Hoe werkt dat precies?

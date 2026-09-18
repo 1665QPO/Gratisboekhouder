@@ -32,11 +32,11 @@ export function ImportPreviewTable({ rows }: ImportPreviewTableProps) {
               key={row.rowIndex}
               className={row.error ? 'bg-red-50' : row.isDuplicate ? 'bg-amber-50' : ''}
             >
-              <td className="whitespace-nowrap px-4 py-2">{row.date ?? '—'}</td>
-              <td className="px-4 py-2">{row.description || '—'}</td>
-              <td className="px-4 py-2">{row.counterparty || '—'}</td>
+              <td className="whitespace-nowrap px-4 py-2">{row.date ?? '-'}</td>
+              <td className="px-4 py-2">{row.description || '-'}</td>
+              <td className="px-4 py-2">{row.counterparty || '-'}</td>
               <td className="whitespace-nowrap px-4 py-2 text-right">
-                {row.amountGross !== null ? formatCurrency(Math.abs(row.amountGross)) : '—'}
+                {row.amountGross !== null ? formatCurrency(Math.abs(row.amountGross)) : '-'}
               </td>
               <td className="px-4 py-2">{row.direction === 'in' ? 'Inkomsten' : 'Uitgaven'}</td>
               <td className="px-4 py-2">
