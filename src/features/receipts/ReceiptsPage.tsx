@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/Button'
+import { BtwRateButtons } from '../../components/BtwRateButtons'
 import { Card } from '../../components/Card'
+import { CostTypeButtons } from '../../components/CostTypeButtons'
 import { FileDropzone } from '../../components/FileDropzone'
 import { db } from '../../db/schema'
 import { formatCurrency } from '../../lib/currency'
 import { createId } from '../../lib/id'
-import type { Transaction } from '../btw/types'
+import type { BtwRate, CostType, Transaction } from '../btw/types'
+import { categorize } from '../transactions/categorize'
 import { findMatchingTransactions } from './matchTransaction'
 import { processReceipt } from './processReceipt'
 
@@ -20,6 +23,8 @@ export function ReceiptsPage() {
   const [rawText, setRawText] = useState('')
   const [showRawText, setShowRawText] = useState(false)
   const [amount, setAmount] = useState('')
+  const [btwRate, setBtwRate] = useState<BtwRate>(21)
+  const [costType, setCostType] = useState<CostType>('kosten')
   const [date, setDate] = useState('')
   const [vendor, setVendor] = useState('')
   const [matches, setMatches] = useState<Transaction[]>([])
@@ -61,9 +66,17 @@ export function ReceiptsPage() {
 
     await db.transaction('rw', db.receipts, db.transactions, async () => {
       if (selectedMatchId) {
-        await db.transactions.update(selectedMatchId, { receiptId })
+        const existing = await db.transactions.get(selectedMatchId)
+        if (existing) {
+          const applied = categorize(existing, { isPrivate: false, btwRate, costType })
+          await db.transactions.update(selectedMatchId, {
+            ...applied,
+            receiptId,
+            needsReview: false,
+          })
+        }
       } else {
-        const transaction: Transaction = {
+        const draft: Transaction = {
           id: createId(),
           date,
           description: vendor.trim() || 'Bonnetje',
@@ -80,7 +93,8 @@ export function ReceiptsPage() {
           receiptId,
           needsReview: true,
         }
-        await db.transactions.add(transaction)
+        const applied = categorize(draft, { isPrivate: false, btwRate, costType })
+        await db.transactions.add({ ...draft, ...applied, needsReview: false })
       }
 
       await db.receipts.add({
@@ -108,6 +122,8 @@ export function ReceiptsPage() {
     setRawText('')
     setShowRawText(false)
     setAmount('')
+    setBtwRate(21)
+    setCostType('kosten')
     setDate('')
     setVendor('')
     setMatches([])
@@ -190,7 +206,7 @@ export function ReceiptsPage() {
             )}
 
             <label className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-stone-700">Bedrag</span>
+              <span className="text-sm font-medium text-stone-700">Bedrag (incl. btw)</span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -200,6 +216,16 @@ export function ReceiptsPage() {
                 className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
               />
             </label>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-stone-700">Btw-tarief</span>
+              <BtwRateButtons value={btwRate} onChange={setBtwRate} />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-stone-700">Soort kosten</span>
+              <CostTypeButtons value={costType} onChange={setCostType} />
+            </div>
 
             <label className="flex flex-col gap-1">
               <span className="text-sm font-medium text-stone-700">Datum</span>

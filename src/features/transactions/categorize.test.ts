@@ -59,4 +59,31 @@ describe('categorize', () => {
     })
     expect(result.rubriek).toBe('3b')
   })
+
+  it('slaat costType op bij zakelijke uitgaven', () => {
+    const result = categorize(makeTransaction({ direction: 'out' }), {
+      isPrivate: false,
+      btwRate: 21,
+      costType: 'investering',
+    })
+    expect(result.costType).toBe('investering')
+  })
+
+  it('negeert costType bij omzet (inkomsten)', () => {
+    const result = categorize(makeTransaction({ direction: 'in' }), {
+      isPrivate: false,
+      btwRate: 21,
+      costType: 'investering',
+    })
+    expect(result.costType).toBeUndefined()
+  })
+
+  it('negeert costType bij privé-transacties', () => {
+    const result = categorize(makeTransaction({ direction: 'out' }), {
+      isPrivate: true,
+      btwRate: null,
+      costType: 'investering',
+    })
+    expect(result.costType).toBeUndefined()
+  })
 })

@@ -2,6 +2,13 @@ export type Rubriek = '1a' | '1b' | '1e' | '2a' | '3a' | '3b' | '4a' | '4b' | '5
 
 export type BtwRate = 21 | 9 | 0 | null
 
+/**
+ * Alleen relevant voor zakelijke uitgaven, en (nog) niet gebruikt voor de btw-aangifte zelf.
+ * Vastgelegd zodat een latere IB-aangifte (winst uit onderneming) niet alle kosten opnieuw hoeft
+ * te laten beoordelen: 'investering' moet je afschrijven over meerdere jaren, 'kosten' niet.
+ */
+export type CostType = 'kosten' | 'investering'
+
 export interface Transaction {
   id: string
   date: string // ISO yyyy-mm-dd
@@ -15,7 +22,7 @@ export interface Transaction {
   btwAmount: number
   netAmount: number
   rubriek: Rubriek | null
-  categoryId?: string
+  costType?: CostType
   source: 'import' | 'manual' | 'receipt'
   importBatchId?: string
   receiptId?: string
@@ -25,7 +32,6 @@ export interface Transaction {
 export interface CounterpartyRule {
   id: string
   matchOn: string // genormaliseerde omschrijving/tegenpartij
-  categoryId?: string
   btwRate: BtwRate
   rubriek: Rubriek | null
   isPrivate: boolean

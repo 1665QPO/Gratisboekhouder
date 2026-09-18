@@ -21,7 +21,7 @@ export function Layout() {
       <header className="border-b border-stone-200 bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
           <NavLink to="/" className="flex items-center gap-2 text-lg font-semibold text-stone-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-600 text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-600 leading-none text-white">
               €
             </span>
             Gratis Boekhouder

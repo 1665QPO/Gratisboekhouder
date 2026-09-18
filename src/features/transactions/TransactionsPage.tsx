@@ -98,13 +98,16 @@ export function TransactionsPage() {
                   </td>
                   <td className="px-4 py-2">{t.rubriek ?? '-'}</td>
                   <td className="px-4 py-2">
-                    {t.isPrivate ? (
-                      <Badge tone="neutral">Privé</Badge>
-                    ) : t.needsReview ? (
-                      <Badge tone="warning">Nog categoriseren</Badge>
-                    ) : (
-                      <Badge tone="success">Gecategoriseerd</Badge>
-                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {t.isPrivate ? (
+                        <Badge tone="neutral">Privé</Badge>
+                      ) : t.needsReview ? (
+                        <Badge tone="warning">Nog categoriseren</Badge>
+                      ) : (
+                        <Badge tone="success">Gecategoriseerd</Badge>
+                      )}
+                      {t.costType === 'investering' && <Badge tone="neutral">Investering</Badge>}
+                    </div>
                   </td>
                   <td className="px-4 py-2 text-right">
                     <button

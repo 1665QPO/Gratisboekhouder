@@ -63,8 +63,11 @@ export async function saveRuleAndApplyToExisting(
       (t) => t.id !== transaction.id && t.needsReview && counterpartyKey(t) === key,
     )
 
+    // costType is per aankoop verschillend (een investering bij deze ene aankoop betekent niet dat
+    // alles van deze tegenpartij een investering is), dus die nemen we niet klakkeloos over.
+    const answersForOthers: CategorizeAnswers = { ...answers, costType: undefined }
     for (const other of others) {
-      const applied = categorize(other, answers)
+      const applied = categorize(other, answersForOthers)
       await db.transactions.update(other.id, { ...applied, needsReview: false })
     }
 

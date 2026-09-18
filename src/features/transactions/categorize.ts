@@ -1,11 +1,13 @@
 import { classifyTransaction, splitAmount } from '../btw/classify'
-import type { BtwRate, Rubriek, Transaction } from '../btw/types'
+import type { BtwRate, CostType, Rubriek, Transaction } from '../btw/types'
 
 export interface CategorizeAnswers {
   isPrivate: boolean
   btwRate: BtwRate
   tegenpartij?: 'nl' | 'eu' | 'buiten-eu'
   btwVerlegd?: boolean
+  /** Alleen relevant voor zakelijke uitgaven; wordt genegeerd voor privé of inkomsten. */
+  costType?: CostType
 }
 
 export interface CategorizeResult {
@@ -14,6 +16,7 @@ export interface CategorizeResult {
   btwAmount: number
   netAmount: number
   rubriek: Rubriek | null
+  costType?: CostType
 }
 
 /** Vertaalt de (simpele) antwoorden van de gebruiker naar de velden die op een Transaction komen. */
@@ -25,6 +28,7 @@ export function categorize(transaction: Transaction, answers: CategorizeAnswers)
       btwAmount: 0,
       netAmount: transaction.amountGross,
       rubriek: null,
+      costType: undefined,
     }
   }
 
@@ -36,6 +40,14 @@ export function categorize(transaction: Transaction, answers: CategorizeAnswers)
     btwVerlegd: answers.btwVerlegd,
   })
   const { net, btw } = splitAmount(transaction.amountGross, answers.btwRate)
+  const costType = transaction.direction === 'out' ? answers.costType : undefined
 
-  return { isPrivate: false, btwRate: answers.btwRate, btwAmount: btw, netAmount: net, rubriek }
+  return {
+    isPrivate: false,
+    btwRate: answers.btwRate,
+    btwAmount: btw,
+    netAmount: net,
+    rubriek,
+    costType,
+  }
 }

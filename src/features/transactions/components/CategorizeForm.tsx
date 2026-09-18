@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Button } from '../../../components/Button'
+import { BtwRateButtons } from '../../../components/BtwRateButtons'
+import { CostTypeButtons } from '../../../components/CostTypeButtons'
 import { db } from '../../../db/schema'
-import type { BtwRate, Transaction } from '../../btw/types'
+import type { BtwRate, CostType, Transaction } from '../../btw/types'
 import { categorize, type CategorizeAnswers } from '../categorize'
 import { counterpartyKey, saveRuleAndApplyToExisting } from '../counterpartyRules'
 
@@ -17,6 +19,7 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [tegenpartij, setTegenpartij] = useState<'nl' | 'eu' | 'buiten-eu'>('nl')
   const [btwVerlegd, setBtwVerlegd] = useState(false)
+  const [costType, setCostType] = useState<CostType>(transaction.costType ?? 'kosten')
   const [remember, setRemember] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -30,6 +33,7 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
       btwRate,
       tegenpartij: tegenpartij === 'nl' ? undefined : tegenpartij,
       btwVerlegd: btwVerlegd || undefined,
+      costType: transaction.direction === 'out' ? costType : undefined,
     }
     try {
       if (remember && key) {
@@ -62,27 +66,15 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
         <>
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium text-stone-700">Btw-tarief</span>
-            <div className="flex gap-2">
-              <Button
-                variant={btwRate === 21 ? 'primary' : 'secondary'}
-                onClick={() => setBtwRate(21)}
-              >
-                21%
-              </Button>
-              <Button
-                variant={btwRate === 9 ? 'primary' : 'secondary'}
-                onClick={() => setBtwRate(9)}
-              >
-                9%
-              </Button>
-              <Button
-                variant={btwRate === 0 ? 'primary' : 'secondary'}
-                onClick={() => setBtwRate(0)}
-              >
-                0% / geen btw
-              </Button>
-            </div>
+            <BtwRateButtons value={btwRate} onChange={setBtwRate} />
           </div>
+
+          {transaction.direction === 'out' && (
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-stone-700">Soort kosten</span>
+              <CostTypeButtons value={costType} onChange={setCostType} />
+            </div>
+          )}
 
           <button
             type="button"

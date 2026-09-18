@@ -1,9 +1,30 @@
+import type { ReactNode } from 'react'
 import { Card } from '../../components/Card'
 
-const POINTS = [
+const POINTS: { title: string; body: ReactNode }[] = [
   {
     title: 'Geen server',
     body: 'Deze app heeft geen backend. Er is niets om je gegevens naartoe te sturen, dus dat gebeurt ook niet.',
+  },
+  {
+    title: 'Waarom geen directe indiening bij de Belastingdienst',
+    body: (
+      <>
+        Software mag alleen digitaal aangifte indienen via Digipoort met een{' '}
+        <a
+          href="https://www.belastingdienst.nl/wps/wcm/connect/bldcontentnl/belastingdienst/intermediairs/aangifte_doen/standard_business_reporting/watbetekentsbsvooru/wat_betekent_sbr_voor_u"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          PKIoverheid-servercertificaat
+        </a>
+        . Dat vereist per definitie een server. Dat is precies het voordeel van deze app: je
+        gegevens blijven van jou in plaats van op een server te staan, en daarom kan de aangifte
+        niet automatisch worden ingediend. Je krijgt wel een overzicht dat je in een paar seconden
+        kunt overtikken in Mijn Belastingdienst Zakelijk.
+      </>
+    ),
   },
   {
     title: 'Opslag in je browser',
