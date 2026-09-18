@@ -65,6 +65,7 @@ function detailSheetRows(transactions: Transaction[]) {
     { value: 'Btw-tarief', ...HEADER_STYLE },
     { value: 'Rubriek', ...HEADER_STYLE },
     { value: 'Soort kosten', ...HEADER_STYLE },
+    { value: 'Correctie', ...HEADER_STYLE },
     { value: 'Heeft bonnetje', ...HEADER_STYLE },
   ]
   const rows = transactions.map((t) => [
@@ -78,6 +79,7 @@ function detailSheetRows(transactions: Transaction[]) {
     { value: t.btwRate ?? 0, type: Number },
     { value: t.rubriek ?? '', type: String },
     { value: t.costType ?? '', type: String },
+    { value: t.isCorrection ? 'Ja' : 'Nee', type: String },
     { value: t.receiptId ? 'Ja' : 'Nee', type: String },
   ])
   return [header, ...rows]
@@ -112,6 +114,7 @@ export async function downloadAangifteExcel(
         { width: 10 },
         { width: 10 },
         { width: 14 },
+        { width: 10 },
         { width: 12 },
       ],
     },

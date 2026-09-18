@@ -107,6 +107,7 @@ export function TransactionsPage() {
                         <Badge tone="success">Gecategoriseerd</Badge>
                       )}
                       {t.costType === 'investering' && <Badge tone="neutral">Investering</Badge>}
+                      {t.isCorrection && <Badge tone="neutral">Correctie</Badge>}
                     </div>
                   </td>
                   <td className="px-4 py-2 text-right">

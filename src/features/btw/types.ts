@@ -23,6 +23,12 @@ export interface Transaction {
   netAmount: number
   rubriek: Rubriek | null
   costType?: CostType
+  /**
+   * Een creditnota aan een klant of een terugbetaling van een leverancier: vermindert de omzet/
+   * kosten van een eerdere periode, in plaats van nieuwe omzet/kosten te zijn. De rubriek wordt dan
+   * bepaald aan de hand van de omgekeerde richting, met een negatief bedrag.
+   */
+  isCorrection?: boolean
   source: 'import' | 'manual' | 'receipt'
   importBatchId?: string
   receiptId?: string

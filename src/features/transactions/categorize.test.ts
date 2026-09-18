@@ -30,6 +30,8 @@ describe('categorize', () => {
       btwAmount: 0,
       netAmount: 121,
       rubriek: null,
+      costType: undefined,
+      isCorrection: false,
     })
   })
 
@@ -100,5 +102,53 @@ describe('categorize', () => {
       costType: 'investering',
     })
     expect(result.costType).toBeUndefined()
+  })
+
+  describe('correcties (creditnota / terugbetaling)', () => {
+    it('boekt een creditnota aan een klant (geld uit) als een negatieve omzetpost, niet als kosten', () => {
+      // De bank ziet alleen "geld uit uw rekening" (direction: out), maar dit is een creditnota die
+      // eerdere omzet verlaagt, dus moet in een omzetrubriek (1a) belanden met een negatief bedrag.
+      const result = categorize(makeTransaction({ amountGross: 121, direction: 'out' }), {
+        isPrivate: false,
+        btwRate: 21,
+        isCorrection: true,
+      })
+      expect(result.rubriek).toBe('1a')
+      expect(result.netAmount).toBeCloseTo(-100)
+      expect(result.btwAmount).toBeCloseTo(-21)
+      expect(result.costType).toBeUndefined()
+    })
+
+    it('boekt een terugbetaling van een leverancier (geld in) als negatieve kosten, niet als omzet', () => {
+      const result = categorize(makeTransaction({ amountGross: 121, direction: 'in' }), {
+        isPrivate: false,
+        btwRate: 21,
+        isCorrection: true,
+      })
+      expect(result.rubriek).toBe('5b')
+      expect(result.netAmount).toBeCloseTo(-100)
+      expect(result.btwAmount).toBeCloseTo(-21)
+    })
+
+    it('houdt bij een correctie naar een EU-klant het volledige (negatieve) bedrag aan, geen btw-split', () => {
+      const result = categorize(makeTransaction({ amountGross: 800, direction: 'out' }), {
+        isPrivate: false,
+        btwRate: 21,
+        tegenpartij: 'eu',
+        isCorrection: true,
+      })
+      expect(result.rubriek).toBe('3b')
+      expect(result.netAmount).toBe(-800)
+      expect(result.btwAmount).toBe(0)
+    })
+
+    it('is niet aan, tenzij expliciet gevraagd', () => {
+      const result = categorize(makeTransaction({ amountGross: 121, direction: 'in' }), {
+        isPrivate: false,
+        btwRate: 21,
+      })
+      expect(result.isCorrection).toBe(false)
+      expect(result.netAmount).toBeCloseTo(100)
+    })
   })
 })

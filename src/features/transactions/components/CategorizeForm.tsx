@@ -20,11 +20,19 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
   const [tegenpartij, setTegenpartij] = useState<'nl' | 'eu' | 'buiten-eu'>('nl')
   const [btwVerlegd, setBtwVerlegd] = useState(false)
   const [costType, setCostType] = useState<CostType>(transaction.costType ?? 'kosten')
+  const [isCorrection, setIsCorrection] = useState(transaction.isCorrection ?? false)
   const [remember, setRemember] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
   const key = counterpartyKey(transaction)
   const partnerLabel = transaction.counterparty || transaction.description
+  // Bij een correctie hoort de btw-vraag bij de omgekeerde richting: een creditnota aan een klant
+  // (geld uit) verlaagt omzet, een terugbetaling van een leverancier (geld in) verlaagt kosten.
+  const effectiveDirection = isCorrection
+    ? transaction.direction === 'in'
+      ? 'out'
+      : 'in'
+    : transaction.direction
 
   async function handleSave() {
     setIsSaving(true)
@@ -33,10 +41,11 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
       btwRate,
       tegenpartij: tegenpartij === 'nl' ? undefined : tegenpartij,
       btwVerlegd: btwVerlegd || undefined,
-      costType: transaction.direction === 'out' ? costType : undefined,
+      costType: effectiveDirection === 'out' ? costType : undefined,
+      isCorrection,
     }
     try {
-      if (remember && key) {
+      if (!isCorrection && remember && key) {
         const appliedToOtherCount = await saveRuleAndApplyToExisting(transaction, answers)
         onSaved(appliedToOtherCount)
       } else {
@@ -64,12 +73,23 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
 
       {!isPrivate && (
         <>
+          <label className="flex items-center gap-2 text-sm text-stone-700">
+            <input
+              type="checkbox"
+              checked={isCorrection}
+              onChange={(e) => setIsCorrection(e.target.checked)}
+            />
+            {transaction.direction === 'out'
+              ? 'Dit is een terugbetaling aan een klant (creditnota), geen nieuwe kosten'
+              : 'Dit is een terugbetaling van een leverancier (bijv. een retour), geen nieuwe omzet'}
+          </label>
+
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium text-stone-700">Btw-tarief</span>
             <BtwRateButtons value={btwRate} onChange={setBtwRate} />
           </div>
 
-          {transaction.direction === 'out' && (
+          {effectiveDirection === 'out' && !isCorrection && (
             <div className="flex flex-col gap-1">
               <span className="text-sm font-medium text-stone-700">Soort kosten</span>
               <CostTypeButtons value={costType} onChange={setCostType} />
@@ -100,7 +120,7 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
                   <option value="buiten-eu">Buiten de EU</option>
                 </select>
               </label>
-              {transaction.direction === 'in' && (
+              {effectiveDirection === 'in' && (
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -115,7 +135,7 @@ export function CategorizeForm({ transaction, onSaved, onCancel }: CategorizeFor
         </>
       )}
 
-      {key && (
+      {!isCorrection && key && (
         <label className="flex items-center gap-2 text-sm text-stone-700">
           <input
             type="checkbox"
