@@ -7,6 +7,7 @@ import { Card } from '../../components/Card'
 import { db } from '../../db/schema'
 import { formatCurrency } from '../../lib/currency'
 import { calculateAangifteTotaal } from '../btw/aangifte'
+import { runAangifteChecks } from '../btw/checks'
 import { RUBRIEK_INFO } from '../btw/rubrieken'
 import { calculateTotals, type RubriekTotal } from '../btw/totals'
 import type { Rubriek } from '../btw/types'
@@ -95,6 +96,7 @@ export function AangiftePage() {
   const totalsByRubriek = new Map(totals.map((t) => [t.rubriek, t]))
   const aangifteTotaal = calculateAangifteTotaal(totals)
   const moetBetalen = aangifteTotaal.saldo >= 0
+  const checks = runAangifteChecks(periodTransactions.filter((t) => !t.needsReview))
 
   async function handleExport() {
     setIsExporting(true)
@@ -133,6 +135,19 @@ export function AangiftePage() {
             Categoriseer ze eerst
           </Link>
           .
+        </div>
+      )}
+
+      {checks.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <p className="font-medium">
+            Controleer dit voordat je aangifte doet ({checks.length}):
+          </p>
+          <ul className="list-inside list-disc">
+            {checks.map((check) => (
+              <li key={check.transactionIds.join(',')}>{check.message}</li>
+            ))}
+          </ul>
         </div>
       )}
 

@@ -1,3 +1,4 @@
+import { INVESTERING_DREMPEL } from '../features/btw/constants'
 import type { CostType } from '../features/btw/types'
 import { Button } from './Button'
 
@@ -27,7 +28,7 @@ export function CostTypeButtons({ value, onChange }: CostTypeButtonsProps) {
         </Button>
       </div>
       <p className="text-xs text-stone-500">
-        Vanaf €450 en een gebruiksduur van meer dan een jaar is een aanschaf meestal een
+        Vanaf €{INVESTERING_DREMPEL} en een gebruiksduur van meer dan een jaar is een aanschaf meestal een
         investering, die je over meerdere jaren afschrijft in plaats van in één keer als kosten
         aftrekt.{' '}
         <a
