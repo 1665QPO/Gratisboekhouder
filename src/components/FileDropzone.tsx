@@ -1,10 +1,14 @@
-import { useRef, useState, type DragEvent } from 'react'
+import { useRef, useState, type DragEvent, type ReactNode } from 'react'
 
 interface FileDropzoneProps {
   onFile: (file: File) => void
+  accept: string
+  icon: ReactNode
+  title: string
+  hint: string
 }
 
-export function FileDropzone({ onFile }: FileDropzoneProps) {
+export function FileDropzone({ onFile, accept, icon, title, hint }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -28,15 +32,13 @@ export function FileDropzone({ onFile }: FileDropzoneProps) {
         isDragging ? 'border-accent-500 bg-accent-50' : 'border-stone-300 hover:border-accent-400'
       }`}
     >
-      <span className="text-4xl">📄</span>
-      <p className="font-medium text-stone-800">
-        Sleep je bankafschrift of Excel-bestand hierheen, of klik om te kiezen
-      </p>
-      <p className="text-sm text-stone-500">CSV of XLSX — bijvoorbeeld een export van je bank</p>
+      <span className="text-4xl">{icon}</span>
+      <p className="font-medium text-stone-800">{title}</p>
+      <p className="text-sm text-stone-500">{hint}</p>
       <input
         ref={inputRef}
         type="file"
-        accept=".csv,.xlsx"
+        accept={accept}
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0]

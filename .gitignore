@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Tesseract.js downloads deze bij lokaal (Node) OCR-testen naar de working directory
+*.traineddata
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

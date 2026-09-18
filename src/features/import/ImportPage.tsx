@@ -5,8 +5,8 @@ import { Card } from '../../components/Card'
 import { createId } from '../../lib/id'
 import { db } from '../../db/schema'
 import type { ImportBatch } from '../btw/types'
+import { FileDropzone } from '../../components/FileDropzone'
 import { ColumnMapper } from './components/ColumnMapper'
-import { FileDropzone } from './components/FileDropzone'
 import { ImportPreviewTable } from './components/ImportPreviewTable'
 import {
   EMPTY_MAPPING,
@@ -118,7 +118,15 @@ export function ImportPage() {
         </div>
       )}
 
-      {step === 'upload' && <FileDropzone onFile={handleFile} />}
+      {step === 'upload' && (
+        <FileDropzone
+          onFile={handleFile}
+          accept=".csv,.xlsx"
+          icon="📄"
+          title="Sleep je bankafschrift of Excel-bestand hierheen, of klik om te kiezen"
+          hint="CSV of XLSX — bijvoorbeeld een export van je bank"
+        />
+      )}
 
       {step === 'mapping' && parsed && (
         <Card className="flex flex-col gap-5">

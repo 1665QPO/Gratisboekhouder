@@ -22,6 +22,10 @@ const POINTS = [
     body: 'Als je de site-data van deze app in je browser wist (of een andere browser/apparaat gebruikt), ben je zonder back-up je gegevens kwijt. Dit is de prijs van 100% privacy: er is geen "wachtwoord vergeten" bij een systeem dat niets van je opslaat.',
   },
   {
+    title: 'Wat is al veilig, wat nog niet',
+    body: 'Zodra je een import bevestigt of een transactie categoriseert, staat het meteen veilig in je browser — ook als de pagina daarna crasht of je hem per ongeluk wegklikt. Alleen tijdens het instellen van een import (vóórdat je op "Bevestig import" klikt) staat het nog even alleen in het geheugen; crasht de pagina precies op dat moment, dan moet je dat ene bestand opnieuw uploaden.',
+  },
+  {
     title: 'Open source',
     body: 'De volledige broncode is vrij te bekijken. Je hoeft ons niet op ons woord te geloven dat er niets wordt verstuurd — je kunt het zelf (of iemand die het kan) laten controleren.',
   },
