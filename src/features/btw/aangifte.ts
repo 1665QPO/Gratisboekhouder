@@ -31,7 +31,13 @@ export function calculateAangifteTotaal(totals: RubriekTotal[]): AangifteTotaal 
     (sum, rubriek) => sum + (byRubriek.get(rubriek)?.btw ?? 0),
     0,
   )
-  const voorbelasting = byRubriek.get('5b')?.btw ?? 0
+  // De zelf berekende btw over inkopen uit het buitenland (4a/4b) is verschuldigd (telt mee in 5a
+  // hierboven), maar mag u in dezelfde aangifte ook als voorbelasting aftrekken, net als bij
+  // binnenlandse kosten. Bron: Belastingdienst, "Intracommunautaire verwerving".
+  const voorbelasting =
+    (byRubriek.get('5b')?.btw ?? 0) +
+    (byRubriek.get('4a')?.btw ?? 0) +
+    (byRubriek.get('4b')?.btw ?? 0)
 
   return {
     verschuldigd: round2(verschuldigd),

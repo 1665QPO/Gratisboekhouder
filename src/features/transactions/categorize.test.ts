@@ -51,13 +51,28 @@ describe('categorize', () => {
     expect(result.rubriek).toBe('5b')
   })
 
-  it('houdt rekening met een EU-tegenpartij', () => {
-    const result = categorize(makeTransaction({ direction: 'in' }), {
+  it('houdt rekening met een EU-tegenpartij en splitst het bedrag niet (geen Nederlandse btw)', () => {
+    // Rubriek 3a/3b heeft geen btw-kolom op de aangifte: het volledige bedrag is omzet.
+    const result = categorize(makeTransaction({ amountGross: 800, direction: 'in' }), {
       isPrivate: false,
       btwRate: 21,
       tegenpartij: 'eu',
     })
     expect(result.rubriek).toBe('3b')
+    expect(result.netAmount).toBe(800)
+    expect(result.btwAmount).toBe(0)
+    expect(result.btwRate).toBeNull()
+  })
+
+  it('splitst het bedrag ook niet bij een levering buiten de EU (3a)', () => {
+    const result = categorize(makeTransaction({ amountGross: 500, direction: 'in' }), {
+      isPrivate: false,
+      btwRate: 21,
+      tegenpartij: 'buiten-eu',
+    })
+    expect(result.rubriek).toBe('3a')
+    expect(result.netAmount).toBe(500)
+    expect(result.btwAmount).toBe(0)
   })
 
   it('slaat costType op bij zakelijke uitgaven', () => {

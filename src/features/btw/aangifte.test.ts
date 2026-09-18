@@ -19,9 +19,22 @@ describe('calculateAangifteTotaal', () => {
 
     const result = calculateAangifteTotaal(totals)
 
+    // De zelf berekende btw over 4a/4b (7 + 3) is tegelijk verschuldigd én aftrekbaar als
+    // voorbelasting, dus die telt ook mee in 5b. Bron: Belastingdienst, "Intracommunautaire
+    // verwerving" ("Dan doet u dit in dezelfde aangifte bij rubriek 5b").
     expect(result.verschuldigd).toBe(135)
-    expect(result.voorbelasting).toBe(50)
-    expect(result.saldo).toBe(85)
+    expect(result.voorbelasting).toBe(60)
+    expect(result.saldo).toBe(75)
+  })
+
+  it('telt de zelf berekende btw over buitenlandse inkopen (4a/4b) ook mee als voorbelasting', () => {
+    const totals: RubriekTotal[] = [total({ rubriek: '4b', btw: 42 })]
+
+    const result = calculateAangifteTotaal(totals)
+
+    expect(result.verschuldigd).toBe(42)
+    expect(result.voorbelasting).toBe(42)
+    expect(result.saldo).toBe(0)
   })
 
   it('negeert rubrieken zonder btw-kolom (1e, 3a, 3b) voor de verschuldigde btw', () => {

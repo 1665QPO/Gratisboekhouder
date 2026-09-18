@@ -39,8 +39,23 @@ export function categorize(transaction: Transaction, answers: CategorizeAnswers)
     tegenpartij: answers.tegenpartij,
     btwVerlegd: answers.btwVerlegd,
   })
-  const { net, btw } = splitAmount(transaction.amountGross, answers.btwRate)
   const costType = transaction.direction === 'out' ? answers.costType : undefined
+
+  // Rubriek 3a/3b (leveringen naar het buitenland) kennen geen omzetbelasting: het volledige
+  // bedrag is de omzet, er is geen Nederlandse btw om af te splitsen. Bron: Belastingdienst,
+  // "Btw-aangifte, het invullen van de verschillende rubrieken".
+  if (rubriek === '3a' || rubriek === '3b') {
+    return {
+      isPrivate: false,
+      btwRate: null,
+      btwAmount: 0,
+      netAmount: transaction.amountGross,
+      rubriek,
+      costType,
+    }
+  }
+
+  const { net, btw } = splitAmount(transaction.amountGross, answers.btwRate)
 
   return {
     isPrivate: false,

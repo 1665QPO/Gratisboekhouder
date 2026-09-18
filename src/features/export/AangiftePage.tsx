@@ -209,9 +209,10 @@ export function AangiftePage() {
           </div>
 
           <p className="text-xs text-stone-400">
-            Zeldzame rubrieken (1c, 1d privégebruik auto, 3c) worden nog niet ondersteund. Komt dit
-            op jou van toepassing, vul die apart in het portaal van de Belastingdienst aan, dan
-            wijkt het eindtotaal hierboven af van je werkelijke aangifte. Gebruik je de
+            Zeldzame rubrieken (1c, 1d privégebruik auto, 2a als afnemer van een binnenlandse
+            verlegde levering, 3c) worden nog niet ondersteund. Komt dit op jou van toepassing, vul
+            die apart in het portaal van de Belastingdienst aan, dan wijkt het eindtotaal hierboven
+            af van je werkelijke aangifte. Gebruik je de
             kleineondernemersregeling (KOR)? Dan hoef je meestal helemaal geen btw-aangifte te doen,
             en is dit overzicht niet op jou van toepassing.
           </p>
