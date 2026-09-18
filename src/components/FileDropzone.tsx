@@ -1,22 +1,30 @@
 import { useRef, useState, type DragEvent, type ReactNode } from 'react'
 
 interface FileDropzoneProps {
-  onFile: (file: File) => void
+  onFiles: (files: File[]) => void
   accept: string
   icon: ReactNode
   title: string
   hint: string
+  multiple?: boolean
 }
 
-export function FileDropzone({ onFile, accept, icon, title, hint }: FileDropzoneProps) {
+export function FileDropzone({
+  onFiles,
+  accept,
+  icon,
+  title,
+  hint,
+  multiple = false,
+}: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault()
     setIsDragging(false)
-    const file = event.dataTransfer.files[0]
-    if (file) onFile(file)
+    const files = Array.from(event.dataTransfer.files)
+    if (files.length > 0) onFiles(multiple ? files : [files[0]])
   }
 
   return (
@@ -39,10 +47,11 @@ export function FileDropzone({ onFile, accept, icon, title, hint }: FileDropzone
         ref={inputRef}
         type="file"
         accept={accept}
+        multiple={multiple}
         className="hidden"
         onChange={(event) => {
-          const file = event.target.files?.[0]
-          if (file) onFile(file)
+          const files = Array.from(event.target.files ?? [])
+          if (files.length > 0) onFiles(files)
           event.target.value = ''
         }}
       />

@@ -18,6 +18,14 @@ type Step = 'upload' | 'processing' | 'confirm' | 'done'
 export function ReceiptsPage() {
   const [step, setStep] = useState<Step>('upload')
   const [error, setError] = useState<string | null>(null)
+
+  // De wachtrij voor een batch-upload: files staat vast voor de hele batch, currentIndex geeft
+  // aan welk bestand er nu wordt getoond.
+  const [files, setFiles] = useState<File[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [savedCount, setSavedCount] = useState(0)
+  const [skippedCount, setSkippedCount] = useState(0)
+
   const [displayBlob, setDisplayBlob] = useState<Blob | null>(null)
   const [displayUrl, setDisplayUrl] = useState<string | null>(null)
   const [rawText, setRawText] = useState('')
@@ -30,8 +38,9 @@ export function ReceiptsPage() {
   const [matches, setMatches] = useState<Transaction[]>([])
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null)
 
-  async function handleFile(file: File) {
+  async function processFile(file: File, index: number) {
     setError(null)
+    setCurrentIndex(index)
     setStep('processing')
     try {
       const result = await processReceipt(file)
@@ -39,6 +48,8 @@ export function ReceiptsPage() {
       setDisplayUrl(URL.createObjectURL(result.displayBlob))
       setRawText(result.rawText)
       setAmount(result.amount !== null ? result.amount.toFixed(2) : '')
+      setBtwRate(21)
+      setCostType('kosten')
       setDate(result.date ?? '')
       setVendor('')
       setShowRawText(false)
@@ -48,9 +59,28 @@ export function ReceiptsPage() {
       setSelectedMatchId(found[0]?.id ?? null)
       setStep('confirm')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Kon dit bestand niet verwerken.')
-      setStep('upload')
+      setError(
+        `Kon "${file.name}" niet verwerken (${err instanceof Error ? err.message : 'onbekende fout'}), overgeslagen.`,
+      )
+      goToIndex(index + 1, { skipped: true })
     }
+  }
+
+  function goToIndex(nextIndex: number, outcome: { saved?: boolean; skipped?: boolean }) {
+    if (outcome.saved) setSavedCount((c) => c + 1)
+    if (outcome.skipped) setSkippedCount((c) => c + 1)
+    if (nextIndex < files.length) {
+      processFile(files[nextIndex], nextIndex)
+    } else {
+      setStep('done')
+    }
+  }
+
+  function handleFiles(selected: File[]) {
+    setFiles(selected)
+    setSavedCount(0)
+    setSkippedCount(0)
+    processFile(selected[0], 0)
   }
 
   function parsedAmount(): number | null {
@@ -110,13 +140,21 @@ export function ReceiptsPage() {
       })
     })
 
-    setStep('done')
+    goToIndex(currentIndex + 1, { saved: true })
+  }
+
+  function handleSkipCurrent() {
+    goToIndex(currentIndex + 1, { skipped: true })
   }
 
   function reset() {
     if (displayUrl) URL.revokeObjectURL(displayUrl)
     setStep('upload')
     setError(null)
+    setFiles([])
+    setCurrentIndex(0)
+    setSavedCount(0)
+    setSkippedCount(0)
     setDisplayBlob(null)
     setDisplayUrl(null)
     setRawText('')
@@ -131,14 +169,15 @@ export function ReceiptsPage() {
   }
 
   const nothingRecognized = amount === '' && date === ''
+  const isBatch = files.length > 1
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-3xl font-semibold text-stone-900">Bonnetje uploaden</h1>
         <p className="mt-2 max-w-2xl text-stone-600">
-          Foto of PDF van een bonnetje of factuur. Herkenning gebeurt volledig in je browser, er
-          wordt geen foto ergens naartoe gestuurd.
+          Foto's of PDF's van bonnetjes of facturen, kies er ook meteen meerdere tegelijk.
+          Herkenning gebeurt volledig in je browser, er wordt geen foto ergens naartoe gestuurd.
         </p>
       </div>
 
@@ -150,11 +189,12 @@ export function ReceiptsPage() {
 
       {step === 'upload' && (
         <FileDropzone
-          onFile={handleFile}
+          onFiles={handleFiles}
           accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,image/*"
+          multiple
           icon="🧾"
-          title="Sleep een foto of PDF van je bonnetje hierheen, of klik om te kiezen"
-          hint="JPG, PNG, HEIC (iPhone-foto's) of PDF"
+          title="Sleep één of meer bonnetjes hierheen, of klik om te kiezen"
+          hint="JPG, PNG, HEIC (iPhone-foto's) of PDF, meerdere tegelijk mag"
         />
       )}
 
@@ -162,161 +202,180 @@ export function ReceiptsPage() {
         <Card className="flex flex-col items-center gap-3 py-12 text-center">
           <span className="animate-pulse text-3xl">🔎</span>
           <p className="font-medium text-stone-800">Bezig met herkennen…</p>
+          {isBatch && (
+            <p className="text-sm text-stone-500">
+              Bonnetje {currentIndex + 1} van {files.length}
+            </p>
+          )}
           <p className="text-sm text-stone-500">Dit kan bij een foto een paar seconden duren.</p>
         </Card>
       )}
 
       {step === 'confirm' && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {displayUrl && displayBlob?.type === 'application/pdf' ? (
-            <Card className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-              <span className="text-4xl">📄</span>
-              <p className="text-sm text-stone-600">PDF-bestand, geen voorbeeld in de browser</p>
-              <a
-                href={displayUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm text-accent-700 underline"
-              >
-                Open in nieuw tabblad
-              </a>
-            </Card>
-          ) : (
-            displayUrl && (
-              <Card className="flex items-center justify-center p-2">
-                <img
-                  src={displayUrl}
-                  alt="Bonnetje"
-                  className="max-h-96 rounded-lg object-contain"
-                />
-              </Card>
-            )
+        <div className="flex flex-col gap-3">
+          {isBatch && (
+            <p className="text-sm font-medium text-stone-600">
+              Bonnetje {currentIndex + 1} van {files.length}
+            </p>
           )}
-
-          <Card className="flex flex-col gap-4">
-            {nothingRecognized ? (
-              <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Kon niets automatisch herkennen. Vul de gegevens hieronder zelf in.
-              </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {displayUrl && displayBlob?.type === 'application/pdf' ? (
+              <Card className="flex flex-col items-center justify-center gap-3 p-6 text-center">
+                <span className="text-4xl">📄</span>
+                <p className="text-sm text-stone-600">PDF-bestand, geen voorbeeld in de browser</p>
+                <a
+                  href={displayUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-accent-700 underline"
+                >
+                  Open in nieuw tabblad
+                </a>
+              </Card>
             ) : (
-              <p className="text-xs text-stone-500">
-                Automatisch herkend, controleer bedrag en datum. Bij een gekreukte of vage foto kan
-                dit onopvallend fout zijn.
-              </p>
+              displayUrl && (
+                <Card className="flex items-center justify-center p-2">
+                  <img
+                    src={displayUrl}
+                    alt="Bonnetje"
+                    className="max-h-96 rounded-lg object-contain"
+                  />
+                </Card>
+              )
             )}
 
-            <label className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-stone-700">Bedrag (incl. btw)</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0,00"
-                className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
-              />
-            </label>
+            <Card className="flex flex-col gap-4">
+              {nothingRecognized ? (
+                <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  Kon niets automatisch herkennen. Vul de gegevens hieronder zelf in.
+                </div>
+              ) : (
+                <p className="text-xs text-stone-500">
+                  Automatisch herkend, controleer bedrag en datum. Bij een gekreukte of vage foto
+                  kan dit onopvallend fout zijn.
+                </p>
+              )}
 
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-stone-700">Btw-tarief</span>
-              <BtwRateButtons value={btwRate} onChange={setBtwRate} />
-            </div>
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-stone-700">Bedrag (incl. btw)</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0,00"
+                  className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
+                />
+              </label>
 
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-stone-700">Soort kosten</span>
-              <CostTypeButtons value={costType} onChange={setCostType} />
-            </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-stone-700">Btw-tarief</span>
+                <BtwRateButtons value={btwRate} onChange={setBtwRate} />
+              </div>
 
-            <label className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-stone-700">Datum</span>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
-              />
-            </label>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-stone-700">Soort kosten</span>
+                <CostTypeButtons value={costType} onChange={setCostType} />
+              </div>
 
-            <label className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-stone-700">Leverancier (optioneel)</span>
-              <input
-                type="text"
-                value={vendor}
-                onChange={(e) => setVendor(e.target.value)}
-                placeholder="bijv. Groenhart"
-                className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
-              />
-            </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-stone-700">Datum</span>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
+                />
+              </label>
 
-            {matches.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-stone-700">
-                  Dit bonnetje lijkt te horen bij:
-                </span>
-                {matches.map((m) => (
-                  <label
-                    key={m.id}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm has-[:checked]:border-accent-400 has-[:checked]:bg-accent-50"
-                  >
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-stone-700">Leverancier (optioneel)</span>
+                <input
+                  type="text"
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                  placeholder="bijv. Groenhart"
+                  className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
+                />
+              </label>
+
+              {matches.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-stone-700">
+                    Dit bonnetje lijkt te horen bij:
+                  </span>
+                  {matches.map((m) => (
+                    <label
+                      key={m.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm has-[:checked]:border-accent-400 has-[:checked]:bg-accent-50"
+                    >
+                      <input
+                        type="radio"
+                        name="match"
+                        checked={selectedMatchId === m.id}
+                        onChange={() => setSelectedMatchId(m.id)}
+                      />
+                      <span>
+                        {m.date} ({m.description || 'Zonder omschrijving'},{' '}
+                        {formatCurrency(m.amountGross)})
+                      </span>
+                    </label>
+                  ))}
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm has-[:checked]:border-accent-400 has-[:checked]:bg-accent-50">
                     <input
                       type="radio"
                       name="match"
-                      checked={selectedMatchId === m.id}
-                      onChange={() => setSelectedMatchId(m.id)}
+                      checked={selectedMatchId === null}
+                      onChange={() => setSelectedMatchId(null)}
                     />
-                    <span>
-                      {m.date} ({m.description || 'Zonder omschrijving'},{' '}
-                      {formatCurrency(m.amountGross)})
-                    </span>
+                    <span>Geen van deze, nieuwe transactie aanmaken</span>
                   </label>
-                ))}
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm has-[:checked]:border-accent-400 has-[:checked]:bg-accent-50">
-                  <input
-                    type="radio"
-                    name="match"
-                    checked={selectedMatchId === null}
-                    onChange={() => setSelectedMatchId(null)}
-                  />
-                  <span>Geen van deze, nieuwe transactie aanmaken</span>
-                </label>
-              </div>
-            )}
+                </div>
+              )}
 
-            {rawText && (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setShowRawText((v) => !v)}
-                  className="text-sm text-accent-700 underline"
-                >
-                  {showRawText ? 'Verberg' : 'Toon'} herkende ruwe tekst
-                </button>
-                {showRawText && (
-                  <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-stone-50 p-3 text-xs text-stone-600">
-                    {rawText}
-                  </pre>
-                )}
-              </div>
-            )}
+              {rawText && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowRawText((v) => !v)}
+                    className="text-sm text-accent-700 underline"
+                  >
+                    {showRawText ? 'Verberg' : 'Toon'} herkende ruwe tekst
+                  </button>
+                  {showRawText && (
+                    <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-stone-50 p-3 text-xs text-stone-600">
+                      {rawText}
+                    </pre>
+                  )}
+                </div>
+              )}
 
-            <div className="flex justify-between pt-2">
-              <Button variant="secondary" onClick={reset}>
-                Annuleren
-              </Button>
-              <Button onClick={handleConfirm} disabled={parsedAmount() === null || !date}>
-                Bonnetje opslaan
-              </Button>
-            </div>
-          </Card>
+              <div className="flex justify-between pt-2">
+                <Button variant="secondary" onClick={handleSkipCurrent}>
+                  {isBatch ? 'Overslaan' : 'Annuleren'}
+                </Button>
+                <Button onClick={handleConfirm} disabled={parsedAmount() === null || !date}>
+                  {isBatch && currentIndex < files.length - 1
+                    ? 'Opslaan en volgende'
+                    : 'Bonnetje opslaan'}
+                </Button>
+              </div>
+            </Card>
+          </div>
         </div>
       )}
 
       {step === 'done' && (
         <Card className="flex flex-col items-start gap-4">
           <span className="text-3xl">✅</span>
-          <h2 className="text-xl font-semibold text-stone-900">Bonnetje opgeslagen</h2>
+          <h2 className="text-xl font-semibold text-stone-900">
+            {savedCount} bonnetje{savedCount === 1 ? '' : 's'} opgeslagen
+            {skippedCount > 0 && `, ${skippedCount} overgeslagen`}
+          </h2>
           <p className="text-stone-600">
-            De foto is bewaard bij de transactie, klaar voor je bewaarplicht.
+            {savedCount > 0
+              ? 'De foto’s zijn bewaard bij de transacties, klaar voor je bewaarplicht.'
+              : 'Er is niets opgeslagen.'}
           </p>
           <div className="flex gap-3">
             <Link
@@ -326,7 +385,7 @@ export function ReceiptsPage() {
               Bekijk transacties
             </Link>
             <Button variant="secondary" onClick={reset}>
-              Nog een bonnetje uploaden
+              Nog meer bonnetjes uploaden
             </Button>
           </div>
         </Card>

@@ -131,7 +131,7 @@ export function ImportPage() {
 
       {step === 'upload' && (
         <FileDropzone
-          onFile={handleFile}
+          onFiles={(files) => handleFile(files[0])}
           accept=".csv,.xlsx"
           icon="📄"
           title="Sleep je bankafschrift of Excel-bestand hierheen, of klik om te kiezen"
