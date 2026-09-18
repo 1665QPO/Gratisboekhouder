@@ -8,11 +8,11 @@ const STEPS = [
   },
   {
     title: 'Beantwoord een paar simpele vragen',
-    body: 'Per kostenpost of ontvangst stelt de app de juiste vraag, zodat jij niet hoeft te weten hoe de Belastingdienst het noemt.',
+    body: 'Per kostenpost of ontvangst stelt de app de juiste vraag, zodat alles goed in jouw administratie terechtkomt en jij niet hoeft te weten hoe de Belastingdienst het noemt.',
   },
   {
     title: 'Download je aangifte-overzicht',
-    body: 'Een overzichtelijke spreadsheet met precies de bedragen die in elk vakje van je btw-aangifte moeten.',
+    body: 'Een overzichtelijke spreadsheet met precies de bedragen die je zo kunt invullen tijdens het doen van je aangifte.',
   },
 ]
 
